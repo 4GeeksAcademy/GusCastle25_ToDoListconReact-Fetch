@@ -15,92 +15,63 @@ function Home () {
 	const [todoInput, setTodoInput] = useState("");
 
 	useEffect(()=>{
-		const local_todos = localStorage.getItem("todos");
-		if (local_todos) {setTodos(JSON.parse(local_todos));}
-	},[]);
-
-	useEffect(()=>{
-		if (todos.length) {
-			localStorage.setItem("todos", JSON.stringify(todos));
-		}
-	}, [todos]);
-
-	useEffect(()=>{
 		fetch("https://playground.4geeks.com/todo/users/GusCastle25")
-		.then (resp => resp.JSON())
-		.then (data => setTodos(data.result))
+		.then (response=> response.json())
+		.then (data => setTodos(data.todos))
 		.catch (error => console.error(error))
 	},[])
 
-	const myHeaders = new Headers();
-		myHeaders.append("Content-Type", "application/json");
-
-const raw = JSON.stringify({
-  "label": "string",
-  "is_done": true
-});
-
-const requestOptions = {
-  method: "POST",
-  headers: myHeaders,
-  body: raw,
-  redirect: "follow"
-};
-
-fetch("https://playground.4geeks.com/todo/todos/GusCastle25", requestOptions)
-	.then (resp => resp.JSON())
-	.then (data => setTodos(data.result))
-	.catch (error => console.error(error));
-	
-fetch('https://playground.4geeks.com/todo/todos/GusCastle25', {
-      method: "PUT",
-      body: JSON.stringify(todos),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-    .then(resp => {
-        console.log(resp.ok); // Será true si la respuesta es exitosa
-        console.log(resp.status); // El código de estado 200, 300, 400, etc.
-        console.log(resp.text()); // Intentará devolver el resultado exacto como string
-        return resp.json(); // Intentará parsear el resultado a JSON y retornará una promesa donde puedes usar .then para seguir con la lógica
-    })
-    .then(data => {
-        // Aquí es donde debe comenzar tu código después de que finalice la búsqueda
-        console.log(data); // Esto imprimirá en la consola el objeto exacto recibido del servidor
-    })
-    .catch(error => { // Manejo de errores
-        console.log(error);
-    });
-
-	fetch('https://playground.4geeks.com/todo/todos/GusCastle25/${todo.id}', {
-      method: "DELETE",
-      body: JSON.stringify(todos),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-    .then(resp => {
-        console.log(resp.ok); // Será true si la respuesta es exitosa
-        console.log(resp.status); // El código de estado 200, 300, 400, etc.
-        console.log(resp.text()); // Intentará devolver el resultado exacto como string
-        return resp.json(); // Intentará parsear el resultado a JSON y retornará una promesa donde puedes usar .then para seguir con la lógica
-    })
-    .then(data => {
-        // Aquí es donde debe comenzar tu código después de que finalice la búsqueda
-        console.log(data); // Esto imprimirá en la consola el objeto exacto recibido del servidor
-    })
-    .catch(error => { // Manejo de errores
-        console.log(error);
-    });
+    // Crear usuario (POST)
+    function createUser() {
+        const requestOptions = {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+        };
+        fetch(`https://playground.4geeks.com/todo/users/GusCastle25`, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                // Actualiza el estado de usuarios con los nuevos datos
+                setUsers([...users, data]);
+                setUserName("")
+            })
+            .catch(error => console.error('Error creating user:', error));
+    }
+    // Crear tarea (POST)
+    function createTodo(newTask) {
+        const requestOptions = {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(newTask)
+        };
+        fetch(`https://playground.4geeks.com/todo/todos/GusCastle25`, requestOptions)
+            .then(response => response.json())
+            .then(data => { console.log(data)
+            })
+            .catch(error => console.error('Error creating user:', error));
+    }
+    // Función para eliminar una tarea
+	const handleDeleteTask = (todosId) => {
+   
+		fetch(`https://playground.4geeks.com/todo/todos/${todosId}`, {
+			method: 'DELETE'
+		})
+		.then(response => {
+			if (response.ok) {
+			} else {
+				throw new Error('Failed to delete task');
+			}
+		})
+		.catch(error => console.error('Error deleting task:', error));
+	};
 
 	return (
 		<form onSubmit={e => {e.preventDefault();
 			if (todoInput.length > 0) {
-				setTodos([{
+				const newTask = {
 					label: todoInput,
-					is_done: false},...todos,]);
-					setTodoInput("");}}}
+					is_done: false}
+				setTodos([newTask,...todos,]); createTodo(newTask);
+				setTodoInput("");}}}
 			className="text-center mt-5 d-flex flex-colum align-items-center justify-content-start">
 			<div className="container">
 				<h1>Todo list</h1>
@@ -120,8 +91,8 @@ fetch('https://playground.4geeks.com/todo/todos/GusCastle25', {
 							label: item.label,
 							is_done: !item.is_done,}))}
 					delete_todo={()=> {
+						handleDeleteTask (item.id)
 						setTodos(todos.toSpliced(idx, 1));
-						localStorage.setItem("todos", JSON.stringify(todos.toSpliced(idx, 1)));
 					}}/>
 				))}
 				<small>{todos.filter((item) => !item.is_done).length} Tasks left to do!</small>
