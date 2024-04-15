@@ -31,7 +31,7 @@ function Home () {
             .then(response => response.json())
             .then(data => {
                 // Actualiza el estado de usuarios con los nuevos datos
-                setUsers([...users, data]);
+                setTodos([...todos, data]);
                 setUserName("")
             })
             .catch(error => console.error('Error creating user:', error));
