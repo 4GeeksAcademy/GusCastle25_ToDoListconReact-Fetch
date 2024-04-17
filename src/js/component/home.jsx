@@ -39,7 +39,19 @@ function Home () {
         };
         fetch(`https://playground.4geeks.com/todo/todos/GusCastle25`, requestOptions)
             .then(response => response.json())
-            .then(data => {setTodos(...todos, data)})
+            .then(data => {setTodos([...todos, data])})
+            .catch(error => console.error('Error creating user:', error));
+    }
+
+	function addDateTodo(addTask) {
+        const requestOptions = {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(addTask)
+        };
+        fetch(`https://playground.4geeks.com/todo/todos/${todosId}`, requestOptions)
+            .then(response => response.json())
+            .then(data => console.log(data))//{setTodos([...todos, data])})
             .catch(error => console.error('Error creating user:', error));
     }
     // Función para eliminar una tarea
@@ -50,6 +62,7 @@ function Home () {
 		})
 		.then(response => {
 			if (response.ok) {
+				setTodos(todos.filter(item => item.id !== todosId))
 			} else {
 				throw new Error('Failed to delete task');
 			}
@@ -87,7 +100,9 @@ function Home () {
 					<span className="todo-text">{item.label}</span>
 					<button type="button" className="btn btn-danger" onClick={()=> {
 						handleDeleteTask (item.id)
-						setTodos(todos.toSpliced(item.id, 1));
+					}}><i className="fas fa-trash-alt"></i></button>
+					<button type="button" className="btn btn-primary" onClick={()=> {
+						addDateTodo (item.id)
 					}}><i className="fas fa-trash-alt"></i></button>
 				</div>
 				
