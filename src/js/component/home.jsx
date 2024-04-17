@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 function Home () {
 	const [todos, setTodos] = useState([]);
 	const [todoInput, setTodoInput] = useState("");
+	const [editTask, setEditTask] = useState(null);
 
 	useEffect(()=>{
 		getTodos()
@@ -43,15 +44,27 @@ function Home () {
             .catch(error => console.error('Error creating user:', error));
     }
 
-	function addDateTodo(addTask) {
+	const editarTodo = (editTask) => {
+        setEditTask(editTask);
+        setTodoInput(editTask.label); // Establecer el valor de entrada como la tarea actual
+    };
+	function putTask() {
         const requestOptions = {
             method: 'PUT',
             headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(addTask)
+			body: JSON.stringify({
+				label: todoInput,
+				is_done: editTask.is_done
+			})
         };
-        fetch(`https://playground.4geeks.com/todo/todos/${todosId}`, requestOptions)
+        fetch(`https://playground.4geeks.com/todo/todos/${editTask.id}`, requestOptions)
             .then(response => response.json())
-            .then(data => console.log(data))//{setTodos([...todos, data])})
+            .then(data => {
+                // Actualiza el estado de usuarios con los nuevos datos
+                setTodos([...todos, data]);
+                setUserName("")
+				setEditTask(null)
+            })
             .catch(error => console.error('Error creating user:', error));
     }
     // Función para eliminar una tarea
@@ -102,8 +115,10 @@ function Home () {
 						handleDeleteTask (item.id)
 					}}><i className="fas fa-trash-alt"></i></button>
 					<button type="button" className="btn btn-primary" onClick={()=> {
-						addDateTodo (item.id)
-					}}><i className="fas fa-trash-alt"></i></button>
+						editarTodo (item.id)
+					}}>
+					<i className="fas fa-edit"></i>
+					</button>
 				</div>
 				
 				))}
